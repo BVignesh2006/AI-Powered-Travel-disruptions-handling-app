@@ -1,18 +1,22 @@
 [
     {
-        "status": "Confirmed",
-        "passenger_name": "J. Doe (Primary)",
-        "seat": "12A",
-        "class_type": "Economy",
-        "gate": "D4",
-        "boarding_time": "10:15 AM",
-        "flight_no": "AA101",
-        "train_no": "",
-        "hotel": "",
-        "pnr": "SIM-ITN-4494",
-        "budget_limit": 2500,
-        "budget_spent": 303,
-        "carbon_kg": "450kg",
-        "visa_status": "Processing Draft..."
+        "status": "REBOOKED",
+        "passenger_name": "Alexander White",
+        "seat": "37A",
+        "class_type": "First Class",
+        "gate": "B3",
+        "boarding_time": "RETOUCHED",
+        "flight_no": "WT-ALT-158",
+        "train_no": "TRAIN-RECOV-79",
+        "hotel": "The Ritz Paris",
+        "origin": "London",
+        "destination": "Paris",
+        "pnr": "SIM-WT-2026",
+        "budget_limit": 5000,
+        "budget_spent": 1250,
+        "carbon_kg": "320kg",
+        "visa_status": "Approved",
+        "disruption_reason": "AI Search detected severe turbulence and landing constraints at destination. Rerouting required for safety.",
+        "recovery_time_ms": 0
     }
 ]

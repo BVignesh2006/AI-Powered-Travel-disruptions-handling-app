@@ -38,30 +38,46 @@ def perform_rebooking():
             data = json.load(f)
             itinerary = data[0] if isinstance(data, list) else data
         
-        if itinerary.get('status') == 'CANCELLED':
+        if itinerary.get('status') == 'CANCELLED' or itinerary.get('status') == 'Confirmed':
             start_time = time.time()
-            print(f"\n[URGENT] DISRUPTION RECOVERY ACTIVATED for PNR: {itinerary['pnr']}")
+            print(f"\n[URGENT] DISRUPTION RECOVERY ACTIVATED for PNR: {itinerary.get('pnr')}")
             
-            # MULTI-THREADING: Parallel API calls
-            t1 = threading.Thread(target=fetch_flight_alternatives, args=(itinerary['pnr'],))
-            t2 = threading.Thread(target=fetch_hotel_alternatives, args=("NYC",))
+            # Simulated AI Intelligent Search Logic
+            # We look for alternatives for the specific passenger
+            p_name = itinerary.get('passenger_name', 'Alexander White')
             
-            t1.start()
-            t2.start()
-            t1.join()
-            t2.join()
+            # Logic: If flight is the main transport, we might pivot to a High-Speed Train if available
+            # or to a different Flight route.
+            original_flight = itinerary.get('flight_no', '---')
             
+            # Generate the "Alternative"
+            if original_flight and original_flight != '---':
+                new_flight = f"WT-ALT-{random.randint(100, 999)}"
+                new_train = f"TRAIN-RECOV-{random.randint(10, 99)}"
+                new_seat = f"{random.randint(1, 40)}{random.choice(['A','B','C','D'])}"
+                new_status = "REBOOKED"
+                new_gate = f"{random.choice(['A','B','C','D'])}{random.randint(1, 30)}"
+            else:
+                new_flight = f"WT-FIX-{random.randint(100, 999)}"
+                new_train = "TRAIN-OFFLINE"
+                new_seat = "7B"
+                new_status = "REBOOKED"
+                new_gate = "G9"
+
             # Finalize Update
-            itinerary['status'] = 'REBOOKED'
-            itinerary['flight_no'] = results.get('flight')
-            itinerary['hotel'] = results.get('hotel')
+            itinerary['status'] = new_status
+            itinerary['flight_no'] = new_flight
+            itinerary['train_no'] = new_train
+            itinerary['seat'] = new_seat
+            itinerary['gate'] = new_gate
+            itinerary['boarding_time'] = "RETOUCHED"
             itinerary['recovery_time_ms'] = int((time.time() - start_time) * 1000)
             
             with open('itinerary.json', 'w') as f:
                 json.dump([itinerary] if isinstance(data, list) else itinerary, f, indent=4)
             
             print(f"[REBOOKER] SUCCESS: Itinerary fixed in {itinerary['recovery_time_ms']}ms.")
-            print(f"[FIXED]: New itinerary generated: {itinerary['flight_no']} + {itinerary['hotel']}")
+            print(f"[FIXED]: Alternative Secured for {p_name}: {itinerary['flight_no']} / {itinerary['train_no']}")
             return True
             
     except Exception as e:
