@@ -16,6 +16,8 @@ from flask_app.models.bookings import Booking
 from flask_app.agent_manager import agent
 from flask_app.utils.api_clients import api_hub
 from ai_agent_backend.deep_concierge import DeepConcierge
+from fpdf import FPDF
+import io
 
 # Singleton for AI Chat
 concierge = DeepConcierge()
@@ -283,57 +285,85 @@ def create_simulated_booking():
     return jsonify({"success": True, "itinerary": new_flight})
 
 @app.route('/itinerary/offline')
-def download_crisis_card_pdf():
-    # Feature 4: Crisis Card (Offline Resilience) - NOW IN PDF
+def download_crisis_card():
+    # Feature 4: Crisis Card (PDF Generation)
     try:
         with open('itinerary.json', 'r') as f:
             data = json.load(f)[0]
-    except:
-        data = {"status": "NO ACTIVE TICKET", "passenger_name": "N/A"}
+        
+        pdf = FPDF()
+        pdf.add_page()
+        
+        # Background color
+        pdf.set_fill_color(248, 250, 252)
+        pdf.rect(0, 0, 210, 297, 'F')
+        
+        # Header
+        pdf.set_font("Arial", 'B', 28)
+        pdf.set_text_color(15, 23, 42) 
+        pdf.cell(0, 30, "WHITE TRAVELS", ln=True, align='C')
+        
+        pdf.set_font("Arial", 'B', 16)
+        pdf.set_text_color(56, 189, 248) # #38bdf8
+        pdf.cell(0, 10, "OFFLINE CRISIS CARD", ln=True, align='C')
+        pdf.ln(10)
+        
+        # Passenger Box
+        pdf.set_fill_color(15, 23, 42)
+        pdf.set_text_color(255, 255, 255)
+        pdf.set_font("Arial", 'B', 14)
+        pdf.cell(0, 15, f" PASSENGER: {data.get('passenger_name', '---')}", ln=True, fill=True)
+        pdf.ln(5)
+        
+        # Details Table-like layout
+        pdf.set_text_color(15, 23, 42)
+        pdf.set_font("Arial", 'B', 12)
+        
+        # Row 1
+        pdf.cell(95, 12, f"PNR: {data.get('pnr', '---')}", border='B')
+        pdf.cell(10, 12, "") # Spacer
+        pdf.cell(90, 12, f"STATUS: {data.get('status', '---').upper()}", border='B', ln=True)
+        
+        # Row 2
+        pdf.set_font("Arial", '', 11)
+        pdf.cell(95, 12, f"Flight No: {data.get('flight_no', '---') or 'N/A'}", border='B')
+        pdf.cell(10, 12, "")
+        pdf.cell(90, 12, f"Train No: {data.get('train_no', '---') or 'N/A'}", border='B', ln=True)
+        
+        # Row 3
+        pdf.cell(95, 12, f"Seat/Class: {data.get('seat', '---')} / {data.get('class_type', '---')}", border='B')
+        pdf.cell(10, 12, "")
+        pdf.cell(90, 12, f"Gate/Time: {data.get('gate', '---')} @ {data.get('boarding_time', '---')}", border='B', ln=True)
+        
+        # Row 4
+        pdf.cell(0, 12, f"Visa Compliance: {data.get('visa_status', '---')}", border='B', ln=True)
+        pdf.ln(15)
+        
+        # AI Footer
+        pdf.set_font("Arial", 'I', 10)
+        pdf.set_text_color(100, 116, 139)
+        footer_text = "This document is an AI-generated fallback for offline travel security. In the event of a total network dropout, present this card to airline or station staff. Your profile is autonomously tracked by White Travels AI Concierge."
+        pdf.multi_cell(0, 8, footer_text, align='C')
+        
+        # Generated Time
+        pdf.ln(5)
+        import datetime
+        pdf.cell(0, 10, f"Generated on: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", ln=True, align='C')
 
-    pdf = FPDF()
-    pdf.add_page()
-    
-    # Header
-    pdf.set_fill_color(2, 6, 23) # Dark Navy
-    pdf.rect(0, 0, 210, 40, 'F')
-    pdf.set_font("Arial", 'B', 24)
-    pdf.set_text_color(56, 189, 248) # Sky Blue
-    pdf.cell(0, 20, "WHITE TRAVELS: CRISIS CARD", 0, 1, 'C')
-    pdf.set_font("Arial", 'I', 12)
-    pdf.set_text_color(255, 255, 255)
-    pdf.cell(0, 10, "OFFLINE RECOVERY PROTOCOL - HACKATHON EDITION", 0, 1, 'C')
-    pdf.ln(15)
-
-    # Content
-    pdf.set_text_color(0, 0, 0)
-    pdf.set_font("Arial", 'B', 16)
-    pdf.cell(0, 10, f"PASSENGER: {data.get('passenger_name', '---')}", 0, 1)
-    pdf.set_font("Arial", '', 12)
-    pdf.cell(0, 10, f"STATUS: {data.get('status', '---')}", 0, 1)
-    pdf.cell(0, 10, f"FLIGHT NO: {data.get('flight_no', 'N/A')}", 0, 1)
-    pdf.cell(0, 10, f"TRN NO: {data.get('train_no', 'N/A')}", 0, 1)
-    pdf.cell(0, 10, f"PNR: {data.get('pnr', '---')}", 0, 1)
-    pdf.cell(0, 10, f"GATE/SEAT: {data.get('gate', '---')} / {data.get('seat', '---')}", 0, 1)
-    pdf.ln(10)
-
-    pdf.set_font("Arial", 'B', 14)
-    pdf.cell(0, 10, "RECOVERY DETAILS:", 0, 1)
-    pdf.set_font("Arial", '', 11)
-    pdf.multi_cell(0, 10, str(data.get('details', data.get('disruption_reason', 'No issues detected. Keep regular schedule.'))))
-    
-    pdf.ln(20)
-    pdf.set_font("Arial", 'I', 10)
-    pdf.set_text_color(150, 150, 150)
-    pdf.cell(0, 10, "Authorized by White Travels Agentic Engine. Present this at any local kiosk.", 0, 1, 'C')
-
-    # Send binary output
-    output = io.BytesIO()
-    pdf_out = pdf.output(dest='S').encode('latin-1')
-    output.write(pdf_out)
-    output.seek(0)
-
-    return send_file(output, as_attachment=True, download_name='CRISIS_CARD_OFFLINE.pdf', mimetype='application/pdf')
+        # Create response
+        # FPDF output 'S' returns a string in Python 2 but bytes in Python 3
+        pdf_bytes = pdf.output(dest='S').encode('latin-1')
+        
+        return Response(
+            pdf_bytes,
+            mimetype="application/pdf",
+            headers={
+                "Content-Disposition": "attachment; filename=CRISIS_CARD_ITINERARY.pdf"
+            }
+        )
+    except Exception as e:
+        print(f"[PDF ERROR]: {e}")
+        return jsonify({"error": "Failed to generate PDF. Check itinerary.json"}), 500
 
 @app.route('/ai/plan', methods=['POST'])
 def ai_plan():
