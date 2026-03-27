@@ -295,8 +295,8 @@ header .search-bar-container label:hover {
 
 .heading span {
     font-size: 3.5rem;
-    background-color: rgba(255, 0, 247, 0.2);
-    color: var(--pink);
+    background-color: rgba(56, 189, 248, 0.1);
+    color: var(--primary);
     border-radius: .5rem;
     padding: .2rem 1rem;
     text-transform: uppercase;
@@ -323,13 +323,24 @@ header .search-bar-container label:hover {
 
 .book .row form {
     flex: 1 1 40rem;
-    padding: 2rem;
-    box-shadow: 0 1rem 2rem rgba(0,0,0,.1);
-    border-radius: .5rem;
+    padding: 4rem;
+    background: #fff;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+    border-radius: 2rem;
+    border: 1px solid rgba(56, 189, 248, 0.1);
 }
 
 .book .row form .inputBox {
     padding: .5rem 0;
+}
+
+.booking-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(56, 189, 248, 0.15) !important;
+}
+
+.booking-card:hover i {
+    transform: scale(1.1);
 }
 
 .book .row form .inputBox input {
@@ -358,14 +369,25 @@ header .search-bar-container label:hover {
 
 .packages .box-container .box {
     flex: 1 1 30rem;
-    border-radius: .5rem;
+    border-radius: 2rem;
     overflow: hidden;
-    box-shadow: 0 1rem 2rem rgba(0,0,0,.1);
+    background: #fff;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+.packages .box-container .box:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(56, 189, 248, 0.15);
 }
 .packages .box-container .box img {
     height: 25rem;
     width: 100%;
     object-fit: cover;
+    transition: transform 0.5s ease;
+}
+.packages .box-container .box:hover img {
+    transform: scale(1.05);
 }
 
 .packages .box-container .box .content {
@@ -378,7 +400,7 @@ header .search-bar-container label:hover {
 }
 
 .packages .box-container .box .content h3 i {
-    color: var(--pink);
+    color: var(--primary);
     margin-right: 1rem;
 }
 
@@ -390,7 +412,7 @@ header .search-bar-container label:hover {
 
 .packages .box-container .box .content .stars i {
     font-size: 1.7rem;
-    color: var(--pink);
+    color: var(--accent);
 }
 
 .packages .box-container .box .price {
@@ -423,9 +445,11 @@ header .search-bar-container label:hover {
 
 .contact .row form {
     flex: 1 1 50rem;
-    padding: 2rem;
-    box-shadow: 0 1rem 2rem rgba(0,0,0,.1);
-    border-radius: .5rem;
+    padding: 4rem;
+    background: #fff;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+    border-radius: 2rem;
+    border: 1px solid rgba(56, 189, 248, 0.1);
 }
 
 .contact .row form .inputBox {
