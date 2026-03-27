@@ -606,3 +606,25 @@ def offline_crisis_card():
         return content
     except Exception as e:
         return f"<h1>Recovery Offline: {str(e)}</h1>"
+
+@app.route('/itinerary/notify_family', methods=['POST'])
+def notify_family_safe():
+    """Triggers an autonomous WhatsApp safety alert to emergency contacts."""
+    try:
+        from flask_app.models.contacts import Contact
+        with open('itinerary.json', 'r') as f:
+            data = json.load(f)[0]
+        
+        passenger = data.get('passenger_name', 'Passenger')
+        status = data.get('status', 'SAFE')
+        dest = data.get('destination', 'their destination')
+        family_phone = os.environ.get('EMERGENCY_PHONE_NUMBER', "+919025066367")
+        
+        message = (f"🛡️ *White Travels | Family Safety* 🛡️\n\n"
+                  f"Passenger: *{passenger}*\nStatus: *{status}* (Destination: {dest})\n\n"
+                  f"AI Sentinel has finalized rebooking and hotel sync. Passenger is safe! ✅")
+        
+        Contact.send_whatsapp_notification(family_phone, message)
+        return jsonify({"success": True, "message": "WhatsApp Safety Alert Dispatched."})
+    except Exception as e:
+        return jsonify({"error": str(e), "success": False})

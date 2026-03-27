@@ -467,7 +467,17 @@
 
                 <div class="te-button-row" style="flex-wrap: wrap; gap: 1rem;">
                     <button onclick="triggerSkillDisruption()" class="btn" style="flex: 1 1 100%; background: #e11d48; border: none; font-size: 1.6rem;">⚡ Check Disruptions</button>
+                    
+                    <div style="flex: 1 1 100%; display: flex; align-items: center; gap: 1rem; background: rgba(56, 189, 248, 0.05); padding: 1rem; border-radius: 1rem; border: 1px solid rgba(56, 189, 248, 0.2);">
+                        <label class="switch">
+                            <input type="checkbox" id="nomad-mode">
+                            <span class="slider round"></span>
+                        </label>
+                        <span style="font-size: 1.2rem; color: #38bdf8; font-weight: bold;"><i class="fas fa-laptop"></i> DIGITAL NOMAD RECOVERY MODE</span>
+                    </div>
+
                     <button onclick="triggerHotelSync()" class="btn" style="flex: 1; background: #4f46e5; border: none; font-size: 1.4rem;"><i class="fas fa-hotel"></i> AI Hotel Sync</button>
+                    <button onclick="triggerFamilyNotify()" class="btn" style="flex: 1; background: #10b981; border: none; font-size: 1.4rem;"><i class="fas fa-users"></i> Notify Family</button>
                     <button onclick="refreshItineraryStatus()" class="btn" style="flex: 1; background: transparent; border: 1px solid #334155; color: #fff;" aria-label="Refresh status"><i class="fas fa-sync"></i> Refresh</button>
                 </div>
 
@@ -796,6 +806,47 @@
             updateItineraryMap(data);
         }
 
+        async function triggerFamilyNotify() {
+            const btn = document.querySelector('button[onclick="triggerFamilyNotify()"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Notifying...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/itinerary/notify_family', { method: 'POST' });
+                const result = await res.json();
+                
+                const log = document.getElementById('skill-reasoning-log');
+                const p = document.createElement('p');
+                p.style.color = '#10b981';
+                p.innerHTML = `> [${new Date().toLocaleTimeString()}] <b>SENTINEL:</b> ${result.message}`;
+                log.prepend(p);
+                alert("🛡️ Family Safety Alert Dispatched via WhatsApp.");
+            } catch (err) {
+                console.error("Family notify failed:", err);
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        function addGlobalSentinels() {
+            if (!teMap) return;
+            const locations = [
+                [35.6762, 139.6503], // Tokyo
+                [51.5074, -0.1278],  // London
+                [40.7128, -74.0060], // NYC
+                [25.2048, 55.2708],  // Dubai
+                [-33.8688, 151.2093],// Sydney
+                [1.3521, 103.8198],   // Singapore
+                [48.8566, 2.3522]    // Paris
+            ];
+            locations.forEach(loc => {
+                const icon = L.divIcon({ className: 'sentinel-dot', iconSize: [10, 10] });
+                L.marker(loc, { icon: icon }).addTo(teMap);
+            });
+        }
+
         async function triggerSkillDisruption() {
             const btn = document.querySelector('button[onclick="triggerSkillDisruption()"]');
             const log = document.getElementById('skill-reasoning-log');
@@ -803,11 +854,13 @@
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Agent Scaling...';
             btn.disabled = true;
 
+            const isNomad = document.getElementById('nomad-mode').checked;
+
             const steps = [
                 { msg: "Pinging Global Sentinel Mesh...", color: "#38bdf8" },
                 { msg: "Analyzing flight-to-train feasibility for current passenger cluster...", color: "#38bdf8" },
                 { msg: "Checking destination weather forecast... [ALERT: Sleet Detected]", color: "#facc15" },
-                { msg: "Calculating budget & sustainability impact...", color: "#10b981" },
+                { msg: isNomad ? "NOMAD MODE: Prioritizing High-Speed Wi-Fi & Lounge Access..." : "Calculating budget & sustainability impact...", color: isNomad ? "#38bdf8" : "#10b981" },
                 { msg: "Finalizing autonomous recovery path...", color: "#10b981" }
             ];
 
@@ -879,6 +932,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             updateItineraryMap(); // Initial Map State (View Only)
+            addGlobalSentinels(); // Add the Global scale dots
             refreshItineraryStatus(); // Initial Data load
             // --- LIVE SENTRY PUSH LISTENER (SSE) ---
             const evtSource = new EventSource("/itinerary/stream");
