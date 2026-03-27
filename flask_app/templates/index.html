@@ -167,10 +167,44 @@
             </div>
 
             <div style="padding: 3rem; background: #0f172a; border-top: 1px solid #1e293b;">
-                <form onsubmit="handleChatSubmit(event)" style="display: flex; gap: 1.5rem;">
-                    <input id="chat-input" type="text" placeholder="Tell me your destination or query..." style="flex: 1; background: #020617; border: 1px solid #334155; padding: 1.5rem 2.5rem; border-radius: 1.5rem; color: #fff; font-size: 1.6rem;" aria-label="Chat query">
+                <form onsubmit="handleChatSubmit(event)" style="display: flex; gap: 1.5rem; position: relative;">
+                    <div style="position: relative; flex: 1;">
+                        <input id="chat-input" type="text" placeholder="Tell me your destination or query..." style="width: 100%; background: #020617; border: 1px solid #334155; padding: 1.5rem 5.5rem 1.5rem 2.5rem; border-radius: 1.5rem; color: #fff; font-size: 1.6rem;" aria-label="Chat query">
+                        <i class="fas fa-microphone" id="voice-btn" onclick="startVoiceRecognition()" style="position: absolute; right: 2rem; top: 1.5rem; font-size: 2rem; color: #94a3b8; cursor: pointer; transition: 0.3s;"></i>
+                    </div>
                     <button type="submit" class="btn" style="padding: 1rem 2.5rem;" aria-label="Send"><i class="fas fa-paper-plane"></i></button>
                 </form>
+                <script>
+                    function startVoiceRecognition() {
+                        const btn = document.getElementById('voice-btn');
+                        const input = document.getElementById('chat-input');
+                        
+                        if (!('webkitSpeechRecognition' in window)) {
+                            alert("Speech recognition not supported in this browser.");
+                            return;
+                        }
+                        
+                        const recognition = new webkitSpeechRecognition();
+                        recognition.lang = 'en-US';
+                        recognition.start();
+                        
+                        btn.style.color = '#e11d48'; // Red for recording
+                        btn.classList.add('fa-pulse');
+                        
+                        recognition.onresult = (event) => {
+                            input.value = event.results[0][0].transcript;
+                            btn.style.color = '#10b981'; // Green for success
+                            setTimeout(() => {
+                                handleChatSubmit(new Event('submit'));
+                            }, 500);
+                        };
+                        
+                        recognition.onend = () => {
+                            btn.classList.remove('fa-pulse');
+                            setTimeout(() => btn.style.color = '#94a3b8', 2000);
+                        };
+                    }
+                </script>
             </div>
         </div>
     </div>
@@ -406,6 +440,15 @@
                         <span class="te-row-label">VISA STATUS</span>
                         <b id="itinerary-visa" style="font-size: 1.7rem; color: #facc15;">---</b>
                     </div>
+                    <div id="itinerary-risk-monitor" style="border-top: 1px solid #1e293b; padding-top: 1.5rem;">
+                        <span class="te-row-label">PREDICTIVE DISRUPTION RISK</span>
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: .5rem;">
+                            <div style="flex: 1; height: .8rem; background: #020617; border-radius: 1rem; position: relative; overflow: hidden; border: 1px solid #1e293b;">
+                                <div id="itinerary-risk-bar" style="width: 15%; height: 100%; background: #10b981; transition: width 2s ease-in-out;"></div>
+                            </div>
+                            <b id="itinerary-risk-label" style="font-size: 1.3rem; color: #10b981; margin-left:1.5rem;">LOW (SAFE)</b>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="te-button-row">
@@ -597,7 +640,11 @@
                 <a href="mailto:support@whitetravels.ai">Email Support</a>
             </div>
         </div>
-        <div class="footer-bottom">
+        <div class="footer-bottom" style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 2rem;">
+            <div id="sentinel-ticker" style="margin-bottom: 2rem; display: flex; align-items: center; justify-content: center; gap: 2rem; font-family: monospace; color: #10b981; font-size: 1.2rem; background: rgba(16, 185, 129, 0.05); padding: 1rem; border-radius: 5rem; border: 1px solid rgba(16, 185, 129, 0.2);">
+                <span><i class="fas fa-satellite-dish fa-spin"></i> LIVE SENTRY MESH: ACTIVE</span>
+                <span id="ticker-stats" style="color: #fff;">MONITORING 328 JOURNEYS | 12 RECOVERIES PERFORMED TODAY</span>
+            </div>
             <p>&copy; 2026 White Travels. Powered by Deep Concierge AI.</p>
             <div class="social-icons">
                 <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
@@ -712,6 +759,23 @@
             document.getElementById('itinerary-limit').innerText = `$${limit}`;
             const percentage = Math.min((spent / limit) * 100, 100);
             document.getElementById('itinerary-budget-bar').style.width = percentage + '%';
+
+            // --- RISK METER UPDATE ---
+            const riskBar = document.getElementById('itinerary-risk-bar');
+            const riskLabel = document.getElementById('itinerary-risk-label');
+            if (riskBar && riskLabel) {
+                if (data.status === 'CANCELLED' || data.status === 'DISRUPTED') {
+                    riskBar.style.width = '100%';
+                    riskBar.style.background = '#e11d48';
+                    riskLabel.innerText = 'CRITICAL (ACTION REQ)';
+                    riskLabel.style.color = '#e11d48';
+                } else {
+                    riskBar.style.width = '15%';
+                    riskBar.style.background = '#10b981';
+                    riskLabel.innerText = 'LOW (SAFE)';
+                    riskLabel.style.color = '#10b981';
+                }
+            }
 
             // --- MAP UPDATE ---
             updateItineraryMap(data);
