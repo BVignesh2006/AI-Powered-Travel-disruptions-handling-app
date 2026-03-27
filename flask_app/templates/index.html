@@ -417,20 +417,45 @@
                         <span style="font-size: 1.4rem; color: #94a3b8;">STATUS</span>
                         <b id="itinerary-status" style="font-size: 1.8rem; color: #10b981; padding: .4rem 1.2rem; background: rgba(16, 185, 129, 0.1); border-radius: .5rem;">---</b>
                     </div>
-                    <div style="display: flex; justify-content: space-between;">
-                        <span style="font-size: 1.4rem; color: #94a3b8;">ASSET ID (PNR)</span>
-                        <b id="itinerary-pnr" style="font-size: 1.8rem; color: #fff;">---</b>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 2rem;">
+                        <span style="font-size: 1.4rem; color: #94a3b8;">VISA STATUS</span>
+                        <b id="itinerary-visa" style="font-size: 1.7rem; color: #facc15;">---</b>
                     </div>
                 </div>
 
-                <div style="display: flex; gap: 2rem;">
+                <div style="display: flex; gap: 2rem; margin-bottom: 3rem;">
                     <button onclick="triggerSkillDisruption()" class="btn" style="flex: 2; background: #e11d48; border: none; font-size: 1.6rem;">⚡ Check Disruptions</button>
                     <button onclick="refreshItineraryStatus()" class="btn" style="flex: 1; background: transparent; border: 1px solid #334155; color: #fff;"><i class="fas fa-sync"></i> Refresh</button>
                 </div>
+
+                <!-- Feature 4: Crisis Card Link -->
+                <div style="padding: 2.5rem; background: rgba(225, 29, 72, 0.05); border: 1px dashed #e11d48; border-radius: 1.5rem; text-align: center;">
+                    <a href="/itinerary/offline" style="color: #e11d48; text-decoration: none; font-size: 1.5rem; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 1.5rem;">
+                        <i class="fas fa-file-download"></i> Download Offline Crisis Card (JSON)
+                    </a>
+                </div>
             </div>
 
-            <!-- Agent Reasoning Cluster -->
+            <!-- Agent Reasoning Cluster + New Feature Widgets -->
             <div style="display: grid; gap: 3rem;">
+                <!-- Feature 3 & 6: Financials & Sustainability -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem;">
+                    <div style="background: rgba(15, 23, 42, 0.6); padding: 3rem; border-radius: 2rem; border: 1px solid #1e293b;">
+                        <h4 style="font-size: 1.4rem; color: #38bdf8; margin-bottom: 2rem; text-transform: uppercase;"><i class="fas fa-wallet"></i> Expense Hub</h4>
+                        <div id="budget-bar-container" style="width: 100%; height: 1rem; background: #020617; border-radius: 1rem; margin-bottom: 1.5rem; overflow: hidden;">
+                            <div id="itinerary-budget-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #38bdf8, #818cf8); transition: width 1s ease;"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="font-size: 1.2rem; color: #94a3b8;">Spent: <b id="itinerary-spent" style="color: #fff;">$0</b></span>
+                            <span style="font-size: 1.2rem; color: #94a3b8;">Limit: <b id="itinerary-limit" style="color: #fff;">$2500</b></span>
+                        </div>
+                    </div>
+                    <div style="background: rgba(15, 23, 42, 0.6); padding: 3rem; border-radius: 2rem; border: 1px solid #1e293b; text-align: center;">
+                        <h4 style="font-size: 1.4rem; color: #10b981; margin-bottom: 2rem; text-transform: uppercase;"><i class="fas fa-leaf"></i> Eco-Footprint</h4>
+                        <b id="itinerary-carbon" style="font-size: 2.5rem; color: #fff; display: block; margin-bottom: 1rem;">---</b>
+                        <p style="font-size: 1.1rem; color: #94a3b8;">AI suggests Carbon Offset</p>
+                    </div>
+                </div>
                 <div style="background: rgba(15, 23, 42, 0.6); padding: 4rem; border-radius: 2.5rem; border: 1px solid #1e293b; position: relative; min-height: 400px; display: flex; flex-direction: column;">
                     <h3 style="font-size: 2.22rem; color: #38bdf8; margin-bottom: 2.5rem; display: flex; align-items: center; gap: 1.5rem;">
                         <i class="fas fa-robot"></i> Workspace Skill Log

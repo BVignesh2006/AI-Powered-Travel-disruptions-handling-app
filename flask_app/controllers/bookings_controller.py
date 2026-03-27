@@ -1,5 +1,5 @@
 from flask_app import app
-from flask import redirect, request, session, url_for, render_template, flash, Response, stream_with_context, jsonify
+from flask import redirect, request, session, url_for, render_template, flash, Response, stream_with_context, jsonify, send_file
 import os
 import json
 import time
@@ -266,14 +266,24 @@ def create_simulated_booking():
         "class_type": "Economy",
         "gate": "D4",
         "boarding_time": "10:15 AM",
-        "flight_no": data.get('flight_no', ''),
+        "flight_no": data.get('flight_no', 'UA204'),
         "train_no": data.get('train_no', ''),
         "hotel": data.get('hotel', ''),
-        "pnr": "SIM-ITN-" + str(random.randint(1000, 9999))
+        "pnr": "SIM-ITN-" + str(random.randint(1000, 9999)),
+        # NEW AGENT FEATURES
+        "budget_limit": 2500,
+        "budget_spent": random.randint(300, 600),
+        "carbon_kg": "450kg",
+        "visa_status": "Processing Draft..."
     }
     with open('itinerary.json', 'w') as f:
         json.dump([new_flight], f, indent=4)
     return jsonify({"success": True, "itinerary": new_flight})
+
+@app.route('/itinerary/offline')
+def download_crisis_card():
+    # Feature 4: Crisis Card (Offline Resilience)
+    return send_file('../itinerary.json', as_attachment=True, download_name='CRISIS_CARD_OFFLINE.json')
 
 @app.route('/ai/plan', methods=['POST'])
 def ai_plan():

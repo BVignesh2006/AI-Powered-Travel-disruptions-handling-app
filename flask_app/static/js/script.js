@@ -142,6 +142,11 @@ async function refreshItineraryStatus() {
         const pnrEl = document.getElementById('itinerary-pnr');
         const seatEl = document.getElementById('itinerary-seat');
         const gateEl = document.getElementById('itinerary-gate');
+        const visaEl = document.getElementById('itinerary-visa');
+        const spentEl = document.getElementById('itinerary-spent');
+        const limitEl = document.getElementById('itinerary-limit');
+        const carbonEl = document.getElementById('itinerary-carbon');
+        const budgetBar = document.getElementById('itinerary-budget-bar');
         
         if(passengerEl) passengerEl.innerText = data.passenger_name || 'Anonymous';
         if(flightEl) flightEl.innerText = data.flight_no || '---';
@@ -149,6 +154,14 @@ async function refreshItineraryStatus() {
         if(pnrEl) pnrEl.innerText = data.pnr || '---';
         if(seatEl) seatEl.innerText = (data.seat || '--') + ' / ' + (data.class_type || '--');
         if(gateEl) gateEl.innerText = (data.gate || '--') + ' | ' + (data.boarding_time || '--');
+        if(visaEl) visaEl.innerText = data.visa_status || 'Visa-Free';
+        if(spentEl) spentEl.innerText = `$${data.budget_spent || 0}`;
+        if(limitEl) limitEl.innerText = `$${data.budget_limit || 2500}`;
+        if(carbonEl) carbonEl.innerText = data.carbon_kg || '---';
+        if(budgetBar) {
+            const perc = ((data.budget_spent || 0) / (data.budget_limit || 2500)) * 100;
+            budgetBar.style.width = `${perc}%`;
+        }
 
         if(statusEl) {
             statusEl.innerText = data.status ? data.status.toUpperCase() : '---';
