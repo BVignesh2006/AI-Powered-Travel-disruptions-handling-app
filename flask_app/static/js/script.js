@@ -139,8 +139,9 @@ async function sendHeroChat() {
         const d = await res.json();
         botDiv.innerText = d.response;
         
-        // If the prompt looks like a destination, offer to open the detailed planner
-        if (prompt.toLowerCase().includes('plan') || prompt.length > 3) {
+        // If the prompt strictly signals intent to plan or book a trip, offer the detailed planner
+        const lowerPrompt = prompt.toLowerCase();
+        if (lowerPrompt.includes('plan') || lowerPrompt.includes('want to go') || lowerPrompt.includes('book') || lowerPrompt.includes('surprise me')) {
             const planBtn = document.createElement('button');
             planBtn.className = 'btn';
             planBtn.style.cssText = 'margin-top: 1rem; padding: 0.8rem 1.5rem; font-size: 1.2rem; display: block;';
