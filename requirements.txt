@@ -16,3 +16,4 @@ setuptools
 wheel
 pywhatkit
 amadeus
+fpdf

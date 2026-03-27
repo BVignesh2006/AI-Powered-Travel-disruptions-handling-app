@@ -109,6 +109,51 @@ async function sendAIChat() {
     body.scrollTop = body.scrollHeight;
 }
 
+// --- HERO CHAT LOGIC ---
+async function sendHeroChat() {
+    const input = document.getElementById('hero-chat-input');
+    const body = document.getElementById('hero-chat-messages');
+    const prompt = (input.value || '').trim();
+    if(!prompt) return;
+
+    // User Message
+    const userDiv = document.createElement('div');
+    userDiv.className = 'user-msg';
+    userDiv.innerText = prompt;
+    body.appendChild(userDiv);
+    input.value = '';
+    body.scrollTop = body.scrollHeight;
+
+    // Bot Response
+    const botDiv = document.createElement('div');
+    botDiv.className = 'ai-msg';
+    botDiv.innerText = 'Analyzing your journey...';
+    body.appendChild(botDiv);
+    
+    try {
+        const res = await fetch('/ai/ask', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt: prompt })
+        });
+        const d = await res.json();
+        botDiv.innerText = d.response;
+        
+        // If the prompt looks like a destination, offer to open the detailed planner
+        if (prompt.toLowerCase().includes('plan') || prompt.length > 3) {
+            const planBtn = document.createElement('button');
+            planBtn.className = 'btn';
+            planBtn.style.cssText = 'margin-top: 1rem; padding: 0.8rem 1.5rem; font-size: 1.2rem; display: block;';
+            planBtn.innerHTML = '<i class="fas fa-magic"></i> Open Detailed Planner';
+            planBtn.onclick = () => toggleAIAssistant();
+            botDiv.appendChild(planBtn);
+        }
+    } catch(e) { 
+        botDiv.innerText = "Deep Concierge is briefly offline. Try again later."; 
+    }
+    body.scrollTop = body.scrollHeight;
+}
+
 function appendChatBubble(body, text, type) {
     const div = document.createElement('div');
     div.style.cssText = type === 'user' 
