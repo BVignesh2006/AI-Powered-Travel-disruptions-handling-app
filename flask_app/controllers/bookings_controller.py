@@ -158,6 +158,25 @@ def book_hotel():
 
 # --- AI RECOVERY & TRAVEL EXPERT ---
 
+@app.route('/itinerary/stream')
+def stream_itinerary_updates():
+    def event_stream():
+        last_mtime = 0
+        while True:
+            try:
+                current_mtime = os.path.getmtime('itinerary.json')
+                if current_mtime > last_mtime:
+                    last_mtime = current_mtime
+                    with open('itinerary.json', 'r') as f:
+                        data = json.load(f)
+                    yield f"data: {json.dumps(data)}\n\n"
+                else:
+                    # Heartbeat to keep connection alive
+                    yield ":\n\n"
+            except: pass
+            time.sleep(1)
+    return Response(stream_with_context(event_stream()), mimetype="text/event-stream")
+
 @app.route('/itinerary/status')
 def get_itinerary_status():
     try:

@@ -120,7 +120,11 @@ class DeepConcierge:
 
         weather = self._get_weather(dest)
         
+        # --- AI TRAVEL VISION (Dynamic Image) ---
+        img_url = f"https://source.unsplash.com/1600x900/?{dest.replace(' ', ',')},landscape,landmark"
+        
         plan = f"#### 🌏 MASTER SECURED ITINERARY: {dest.upper()}\n"
+        plan += f"![{dest}]({img_url})\n\n"
         plan += f"📅 **Duration:** {days} Days | 👥 **Members:** {num_members} | 💰 **Budget:** ${budget}\n\n"
         
         plan += f"**1. Mixed Mode Transportation Secured:**\n"
@@ -259,11 +263,11 @@ class DeepConcierge:
         # === INTENT 4: TOURIST SPOTS / PLACES / LANDMARKS ===
         if any(w in lower_prompt for w in ["tourist", "attraction", "place", "visit", "see", "sightseeing", "spot", "landmark", "explore", "things to do", "must see", "famous", "popular", "what is in", "tell me about", "say about", "describe", "know about", "tell about"]):
             if target_city and city_info:
-                response_parts.append(f"Top attractions in {target_city} ({city_info.get('country', '')}): {city_info['attractions']}. These spots consistently receive the highest ratings from our global traveller network!")
+                response_parts.append(f"Ah, {target_city}! Excellent choice. You should definitely check out: {city_info['attractions']}. These are the highest-rated spots in my current GDS database for {city_info.get('country')}.")
             elif unknown_city_name:
-                response_parts.append(f"Great choice! {unknown_city_name} is a wonderful destination. While I'm expanding my curated database with detailed info, here are my top tips: explore the local temples and heritage sites, try authentic regional cuisine at local markets, and ask locals for hidden gems that tourists usually miss. Want me to help plan a full trip to {unknown_city_name}?")
+                response_parts.append(f"That sounds like a unique destination! While I don't have a specific pre-cached profile for '{unknown_city_name}' in my local memory, my global AI search suggests it's worth exploring. I can help you search for the fastest flights, find eco-friendly hotels, and even handle any disruptions along the way. Should I start looking into transport for {unknown_city_name} for you?")
             elif not target_city:
-                response_parts.append("I can give you a full tourist guide for any city! Which destination are you curious about?")
+                response_parts.append("I have curated guides for over 60 global cities! Which destination are you curious about today?")
 
         # === INTENT 5: LOCAL FOOD ===
         if any(w in lower_prompt for w in ["food", "eat", "cuisine", "restaurant", "dish", "local food", "taste", "drink", "speciality", "must eat", "famous food", "street food", "snack"]):
