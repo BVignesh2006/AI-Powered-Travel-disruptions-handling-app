@@ -13,6 +13,7 @@ N8N_DISRUPTION_WEBHOOK = "https://your-n8n-instance.cloud/webhook/disruption-mon
 N8N_CHECK_WEBHOOK = "https://suthan06it.app.n8n.cloud/webhook/check-disruption"
 from flask_app.models.users import User
 from flask_app.models.bookings import Booking
+from flask_app.models.contacts import Contact
 from flask_app.agent_manager import agent
 from flask_app.utils.api_clients import api_hub
 from ai_agent_backend.deep_concierge import DeepConcierge
@@ -197,11 +198,30 @@ def trigger_itinerary_disruption():
             if response.status_code == 200:
                 result = response.json()
                 if result.get("status") == "DISRUPTED":
-                    itinerary['status'] = 'CANCELLED'
-                    itinerary['disruption_reason'] = result.get('reason', 'Critical Weather Alert')
+                    # Create the recovery itinerary based on the AI's alternative booking
+                    recovery = {
+                        "status": "REBOOKED",
+                        "passenger_name": itinerary.get("passenger_name", "Primary Passenger"),
+                        "flight_no": "AI-RECOVERY",
+                        "disruption_reason": result.get("reason", "Disrupted by Crisis Agent"),
+                        "details": str(result.get("alternative_booking", "Crisis Stay or Alternative Transport"))
+                    }
                     with open('itinerary.json', 'w') as f:
-                        json.dump([itinerary], f, indent=4)
-                    return jsonify({"success": True, "status": "CANCELLED", "reason": itinerary['disruption_reason']})
+                        json.dump([recovery], f, indent=4)
+                    
+                    # --- IMMEDIATE CUSTOMER NOTIFICATION ---
+                    customer_phone = os.environ.get('CUSTOMER_PHONE_NUMBER', "+919025066367")
+                    notif_msg = f"❗ *Crisis Alert:* {result.get('reason')}\n\nOur AI has secured an alternative plan: {result.get('alternative_booking')[:150]}\n\nTap for details in your dashboard."
+                    try:
+                        Contact.send_whatsapp_notification(customer_phone, notif_msg)
+                    except Exception as ne:
+                        print(f"WhatsApp Notify error: {ne}")
+
+                    print(f"[SUCCESS]: AI Rebooked alternative due to: {result.get('reason')}")
+                    return jsonify({"success": True, "status": "CANCELLED", "reason": result.get('reason')})
+                else:
+                    print("[LIVE]: No disruptions found by AI Search.")
+                    return jsonify({"success": True, "status": "CONFIRMED", "reason": "No disruptions found in location."})
         except:
             print("[DEMO]: n8n offline or timeout. Falling back to Simulated Disruption for Hackathon demo.")
         
@@ -241,6 +261,16 @@ def trigger_rebook_logic():
         n8n_result = response.json() if response.status_code == 200 else {}
         rebooking_strategy = n8n_result.get('rebooking_strategy', "n8n Brain: Processing fallback recovery options...")
 
+        # --- AUTO-NOTIFY CUSTOMER VIA WHATSAPP ---
+        # Note: We attempt to get the phone number from environment or session
+        customer_phone = os.environ.get('CUSTOMER_PHONE_NUMBER', "+919025066367") # Using a default for demo
+        whatsapp_msg = f"⚠️ *Travel Alert for {booking_data.get('passenger_name')}* ⚠️\n\nYour itinerary is being adjusted due to disruptions. \n\n*Current Strategy:* {rebooking_strategy}\n\nOur AI is monitoring your status 24/7. Check your dashboard for real-time updates! 🌍"
+        
+        try:
+            Contact.send_whatsapp_notification(customer_phone, whatsapp_msg)
+        except Exception as e:
+            print(f"WhatsApp notification failed: {e}")
+
         return jsonify({
             "success": True, 
             "output": f"[N8N RECOVERY]: {rebooking_strategy}",
@@ -253,7 +283,17 @@ def trigger_rebook_logic():
         script_path = os.path.join('.agent', 'skills', 'travel-expert', 'scripts', 'rebook_logic.py')
         try:
             result = subprocess.run(['python', script_path], capture_output=True, text=True)
-            return jsonify({"success": True, "output": result.stdout})
+            output_text = result.stdout
+            
+            # --- AUTO-NOTIFY CUSTOMER VIA WHATSAPP (LOCAL FALLBACK) ---
+            customer_phone = os.environ.get('CUSTOMER_PHONE_NUMBER', "+919025066367")
+            whatsapp_msg = f"🔔 *Agent Alert: Flight Recovery In Progress* 🔔\n\nDisruption detected. Our autonomous system is re-routing your travel. \n\n*Alternative Identified:* {output_text[:150]}..."
+            try:
+                Contact.send_whatsapp_notification(customer_phone, whatsapp_msg)
+            except Exception as w_e:
+                 print(f"WhatsApp notification failed: {w_e}")
+
+            return jsonify({"success": True, "output": output_text})
         except:
             return jsonify({"error": str(e)})
 
