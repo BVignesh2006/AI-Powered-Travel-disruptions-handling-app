@@ -463,9 +463,9 @@ function confirmQuickBook() {
 document.addEventListener('DOMContentLoaded', () => {
     // Welcome popup logic removed per user request so AI suggestions only happen on manual click
 
-    // Real-time background polling for Disruption Detector (refresh every 3 seconds)
+    // Real-time background polling for Disruption Detector (refresh every 15 seconds for better performance)
     if(document.getElementById('ai-notifications')) {
-        setInterval(refreshItineraryStatus, 3000);
+        setInterval(refreshItineraryStatus, 15000);
     }
 
     if (window.location.search.includes('quickbook=1')) {
