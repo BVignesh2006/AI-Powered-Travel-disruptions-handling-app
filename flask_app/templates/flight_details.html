@@ -124,8 +124,8 @@
                     <span style="font-size: 1.2rem; color: #64748b; display: block; margin-bottom: 0.5rem;">Price per adult</span>
                     <div class="price-badge">{{flight.price}}</div>
                     <div style="display: flex; gap: 1rem; margin-top: 2rem; justify-content: flex-end;">
-                        <button onclick="simulateAIBooking('{{flight.flight_no}}')" class="btn" style="padding: 1rem 2.5rem; font-size: 1.4rem;">
-                            <i class="fas fa-robot"></i> Track & Book
+                        <button data-id="{{flight.flight_no}}" onclick="requestPayment('flight', this.getAttribute('data-id'))" class="btn" style="padding: 1rem 2.5rem; font-size: 1.4rem;">
+                            <i class="fas fa-robot"></i> Book Flight
                         </button>
                     </div>
                 </div>

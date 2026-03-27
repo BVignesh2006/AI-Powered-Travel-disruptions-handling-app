@@ -63,20 +63,71 @@ function appendChatBubble(body, text, type) {
 }
 
 // --- SIMULATION & MONITORING ---
-async function simulateAIBooking(flightNo) {
+async function simulateAIBooking(flightNo, trainNo, hotelName) {
     try {
+        const payload = {};
+        if (flightNo) payload.flight_no = flightNo;
+        if (trainNo) payload.train_no = trainNo;
+        if (hotelName) payload.hotel = hotelName;
+
         const res = await fetch('/booking/simulate', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ flight_no: flightNo })
+            body: JSON.stringify(payload)
         });
         const data = await res.json();
         if(data.success) {
-            alert(`[AI CONCIERGE]: Flight ${flightNo} locked! Monitoring actual status in workspace...`);
+            let type = flightNo ? `Flight ${flightNo}` : (trainNo ? `Train ${trainNo}` : `Hotel ${hotelName}`);
+            alert(`[AI CONCIERGE]: Payment successful! ${type} locked. Disruption monitoring activated...`);
             window.location.href = '/#travel-expert-monitor';
         }
     } catch (err) { console.error("Simulation failed:", err); }
 }
+
+let currentPaymentType = null;
+let currentPaymentId = null;
+
+window.requestPayment = function(type, id) {
+    currentPaymentType = type;
+    currentPaymentId = id;
+    
+    let modal = document.getElementById('global-payment-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'global-payment-modal';
+        modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); z-index: 20000; display: flex; align-items: center; justify-content: center;';
+        
+        modal.innerHTML = `
+            <div style="background: #fff; width: 500px; padding: 4rem; border-radius: 2rem; position: relative;">
+                <i class="fas fa-times" onclick="document.getElementById('global-payment-modal').style.display='none'" style="position: absolute; top: 2rem; right: 2rem; font-size: 2.5rem; cursor: pointer; color: #666;"></i>
+                <h2 style="font-size: 2.5rem; margin-bottom: 2rem; color: #0f172a;"><i class="fas fa-lock" style="color: #10b981;"></i> Secure Checkout</h2>
+                <p style="font-size: 1.4rem; color: #64748b; margin-bottom: 2rem;">Please enter your card details to finalize the transaction for this ${type}.</p>
+                <form onsubmit="confirmGlobalPayment(event)" style="display: flex; flex-direction: column; gap: 1.5rem;">
+                    <input type="text" id="global-card-input" placeholder="Card Number (required)" required style="width: 100%; padding: 1.5rem; font-size: 1.6rem; border: 1px solid #e2e8f0; border-radius: .8rem; box-sizing: border-box;">
+                    <button type="submit" class="btn" style="width: 100%; padding: 1.5rem; font-size: 1.6rem; background: #0f172a; color: #fff; border: none; border-radius: .8rem; cursor: pointer;">
+                        Confirm Payment
+                    </button>
+                </form>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+    document.getElementById('global-card-input').value = '';
+    modal.style.display = 'flex';
+};
+
+window.confirmGlobalPayment = function(e) {
+    e.preventDefault();
+    document.getElementById('global-payment-modal').style.display = 'none';
+    
+    if (currentPaymentType === 'flight') {
+        simulateAIBooking(currentPaymentId, null, null);
+    } else if (currentPaymentType === 'train') {
+        simulateAIBooking(null, currentPaymentId, null);
+    } else if (currentPaymentType === 'hotel') {
+        simulateAIBooking(null, null, currentPaymentId);
+    }
+};
 
 let lastNotifiedState = '';
 
@@ -84,14 +135,21 @@ async function refreshItineraryStatus() {
     try {
         const res = await fetch('/itinerary/status');
         const data = await res.json();
+        const passengerEl = document.getElementById('itinerary-passenger');
         const flightEl = document.getElementById('itinerary-flight');
         const trainEl = document.getElementById('itinerary-train');
         const statusEl = document.getElementById('itinerary-status');
         const pnrEl = document.getElementById('itinerary-pnr');
+        const seatEl = document.getElementById('itinerary-seat');
+        const gateEl = document.getElementById('itinerary-gate');
         
+        if(passengerEl) passengerEl.innerText = data.passenger_name || 'Anonymous';
         if(flightEl) flightEl.innerText = data.flight_no || '---';
         if(trainEl) trainEl.innerText = data.train_no || '---';
         if(pnrEl) pnrEl.innerText = data.pnr || '---';
+        if(seatEl) seatEl.innerText = (data.seat || '--') + ' / ' + (data.class_type || '--');
+        if(gateEl) gateEl.innerText = (data.gate || '--') + ' | ' + (data.boarding_time || '--');
+
         if(statusEl) {
             statusEl.innerText = data.status ? data.status.toUpperCase() : '---';
             if(data.status && data.status.toUpperCase() === 'CANCELLED') {
@@ -120,12 +178,14 @@ async function refreshItineraryStatus() {
                 const flAlert = data.flight_no ? `Flight ${data.flight_no}` : '';
                 const trAlert = data.train_no ? `Train ${data.train_no}` : '';
                 const joined = [flAlert, trAlert].filter(Boolean).join(' & ');
+                
+                const ticketInfo = `[${data.passenger_name || 'Passenger'}] ${data.seat ? 'Seat ' + data.seat : ''}`;
 
                 const alertHtml = `
                     <div class="alert-item" style="margin-bottom: 1.5rem; padding: 1rem; background: #fff5f5; border-left: 4px solid #e11d48; border-radius: 0.5rem; animation: fadein 0.5s;">
-                        <p style="font-size: 1.4rem; color: #333; margin-bottom: 0.5rem;"><b><i class="fas fa-exclamation-triangle" style="color: #e11d48;"></i> CRITICAL: ${joined} Cancelled!</b></p>
-                        <p style="font-size: 1.2rem; color: #666; margin-bottom: 0.5rem;">Reason: Disrupted scheduled bookings.</p>
-                        <p style="font-size: 1.1rem; color: #64748b; margin-top: .5rem;"><a href="/#travel-expert-monitor" style="color: var(--primary); font-weight: bold;">View Recovery Strategy</a></p>
+                        <p style="font-size: 1.4rem; color: #333; margin-bottom: 0.5rem;"><b><i class="fas fa-exclamation-triangle" style="color: #e11d48;"></i> TARGETED DISRUPTION: ${joined} Cancelled!</b></p>
+                        <p style="font-size: 1.2rem; color: #666; margin-bottom: 0.5rem;">The AI monitor detected a cancellation for your exact booked ticket: <span style="font-weight: bold; color: #333;">${ticketInfo}</span>.</p>
+                        <p style="font-size: 1.1rem; color: #64748b; margin-top: .5rem;"><a href="/#travel-expert-monitor" style="color: var(--primary); font-weight: bold;">Tap For AI Recovery Strategy</a></p>
                     </div>
                 `;
                 notifBox.innerHTML = alertHtml + notifBox.innerHTML;
@@ -315,9 +375,10 @@ async function fetchFinalPlan(box) {
 }
 
 function confirmQuickBook() {
-    alert("Trip Confirmed! Our AI Agent is now making arrangements for your flights and hotels. Check the monitoring dashboard for updates.");
     closeQuickBook();
-    window.location.href = '/#travel-expert-monitor';
+    const type = userPlanChoices.transport ? userPlanChoices.transport.toLowerCase() : 'flight';
+    const id = "AI-" + type.toUpperCase() + "-" + Math.floor(Math.random() * 9000 + 1000);
+    requestPayment(type, id);
 }
 
 // UI Feature Listeners

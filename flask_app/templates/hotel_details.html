@@ -99,11 +99,7 @@
                             <span style="font-size: 1.2rem; color: #64748b;">Starts from</span>
                             <div style="font-size: 2.6rem; font-weight: 700; color: #0f172a;">{{hotel.price}}<span style="font-size: 1.4rem; font-weight: 400; color: #64748b;"> / night</span></div>
                         </div>
-                        <form action="/book_hotel" method="POST">
-                            <input type="hidden" name="name" value="{{hotel.name}}">
-                            <input type="hidden" name="price" value="{{hotel.price}}">
-                            <button class="btn" style="padding: 1.2rem 2.5rem; font-size: 1.4rem;">Check Rooms</button>
-                        </form>
+                        <button data-name="{{hotel.name}}" onclick="requestPayment('hotel', this.getAttribute('data-name'))" class="btn" style="padding: 1.2rem 2.5rem; font-size: 1.4rem;">Check Rooms</button>
                     </div>
                 </div>
             </div>

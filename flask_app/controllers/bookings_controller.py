@@ -111,8 +111,29 @@ def book_package():
 @app.route('/trains')
 def trains(): return render_template('trains.html')
 
+@app.route('/trains/details', methods=['POST'])
+def train_details():
+    origin = request.form.get('origin', 'Central')
+    destination = request.form.get('destination', 'Unknown Destination')
+    trains_list = [
+        {'name': 'Express Rail C1', 'duration': '2h 15m', 'departure': '08:00 AM', 'price': '$45'},
+        {'name': 'Intercity FastTrain', 'duration': '3h 05m', 'departure': '10:30 AM', 'price': '$35'},
+        {'name': 'Night Sleeper 7', 'duration': '8h 00m', 'departure': '11:00 PM', 'price': '$120'}
+    ]
+    return render_template('train_details.html', origin=origin, destination=destination, trains=trains_list)
+
 @app.route('/hotels')
 def hotels(): return render_template('hotels.html')
+
+@app.route('/hotels/details', methods=['POST'])
+def hotel_details():
+    destination = request.form.get('destination', 'Unknown City')
+    hotels_list = [
+        {'name': f"{destination} Grand Hotel", 'stars': 5, 'price': '$250', 'description': 'Luxury accommodation right in the city center.'},
+        {'name': f"Cozy {destination} Inn", 'stars': 3, 'price': '$120', 'description': 'Comfortable stay with complimentary breakfast.'},
+        {'name': f"The Ritz {destination}", 'stars': 5, 'price': '$400', 'description': 'Five-star luxury amenities and pool access.'}
+    ]
+    return render_template('hotel_details.html', destination=destination, hotels=hotels_list)
 
 @app.route('/book_hotel', methods=['POST'])
 def book_hotel():
@@ -174,8 +195,14 @@ def create_simulated_booking():
     data = request.get_json()
     new_flight = {
         "status": "Confirmed",
-        "flight_no": data.get('flight_no', 'AA123'),
-        "train_no": data.get('train_no', 'TRN808'),
+        "passenger_name": "J. Doe (Primary)",
+        "seat": "12A",
+        "class_type": "Economy",
+        "gate": "D4",
+        "boarding_time": "10:15 AM",
+        "flight_no": data.get('flight_no', ''),
+        "train_no": data.get('train_no', ''),
+        "hotel": data.get('hotel', ''),
         "pnr": "SIM-ITN-" + str(random.randint(1000, 9999))
     }
     with open('itinerary.json', 'w') as f:
