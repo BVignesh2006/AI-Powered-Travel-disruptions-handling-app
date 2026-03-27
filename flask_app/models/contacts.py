@@ -9,8 +9,13 @@ EMAIL_REGEX = re.compile(r'^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9._-]+\.[a-zA-Z]+$')
 LETTER_REGEX = re.compile(r"^[\w'\-,.][^0-9_!¡?÷?¿/\\+=@#$%ˆ&*(){}|~<>;:[\]]{2,}$")
 PHONE_REGEX = re.compile(r"^(\+\d{1,2}\s?)?1?\-?\.?\s?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$")
 DATABASE = "white_travels_db"
+<<<<<<< HEAD
 EMAIL_ADDRESS = os.environ.get('EMAIL_USER')
 EMAIL_PASSWORD = os.environ.get('EMAIL_APP_PASS')
+=======
+EMAIL_ADDRESS = os.environ.get('DB_USER')
+EMAIL_PASSWORD = os.environ.get('DB_PASS')
+>>>>>>> 48b333d1a9011be374455232f225deb2d2b324e3
 
 class Contact:
     def __init__(self,data):
@@ -33,12 +38,20 @@ class Contact:
         return str(contacts.insert_one(data).inserted_id)
 
     def sendContactForm(result):
+<<<<<<< HEAD
         # 1. Send Email to Admin
         msg_admin = EmailMessage()
         msg_admin['Subject'] = f"New Enquiry from {result['contact_name']}: {result['contact_subject']}"
         msg_admin['From'] = EMAIL_ADDRESS
         msg_admin['To'] = EMAIL_ADDRESS
         msg_admin.set_content(f"""
+=======
+        msg = EmailMessage()
+        msg['Subject'] = result['contact_subject']
+        msg['From'] = result['contact_email']
+        msg['To'] = EMAIL_ADDRESS
+        msg.set_content(f"""
+>>>>>>> 48b333d1a9011be374455232f225deb2d2b324e3
         Hello there,
 
         You just recieved a contact form from White Travels.
@@ -49,6 +62,7 @@ class Contact:
         Message: {result['contact_message']}
 
         Kind Regards,
+<<<<<<< HEAD
         System Admin
         """)
 
@@ -121,6 +135,16 @@ class Contact:
         except Exception as e:
             print(f"Failed to send WhatsApp via pywhatkit: {e}")
             print("Troubleshooting: Ensure pywhatkit is installed and you are logged into WhatsApp Web on your default browser.")
+=======
+        White Travels
+        
+        """)
+
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
+            smtp.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
+
+            smtp.send_message(msg)
+>>>>>>> 48b333d1a9011be374455232f225deb2d2b324e3
 
 
     @staticmethod

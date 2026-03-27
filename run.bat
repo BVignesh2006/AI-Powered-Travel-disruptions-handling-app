@@ -30,14 +30,14 @@ if %errorlevel% equ 0 (
 echo [OK] Using: %PY%
 
 :: Install Dependencies (Silent)
-echo [2/3] Verifying core modules (Flask, Duffel, DeepSeek)...
-%PY% -m pip install -r requirements.txt --quiet
-if %errorlevel% neq 0 (
-    echo [WARNING] Dependency sync encountered issues. 
-    echo Checking if server can run regardless...
-) else (
-    echo [OK] Dependencies confirmed.
-)
+echo [2/3] Skipping dependency check for faster startup...
+:: %PY% -m pip install -r requirements.txt --quiet
+:: if %errorlevel% neq 0 (
+::     echo [WARNING] Dependency sync encountered issues. 
+::     echo Checking if server can run regardless...
+:: ) else (
+::     echo [OK] Dependencies confirmed.
+:: )
 
 :: Launch Background Watcher & Server
 echo [3/3] Powering up AI Watchers and Web Shell...
