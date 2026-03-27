@@ -116,38 +116,45 @@ class DeepConcierge:
         lower_prompt = prompt.lower()
         
         # 1. Greetings
-        if lower_prompt in ["hi", "hello", "hey", "help"]:
+        if lower_prompt in ["hi", "hello", "hey", "help", "who are you"]:
             return "Greetings! I am the Autonomous Concierge. I have access to live weather, Amadeus flights, and your calendar. How can I optimize your journey today?"
             
         # 2. Dynamic Location Extraction
-        known_cities = ['tokyo', 'paris', 'london', 'new york', 'cabo', 'honolulu', 'rome', 'dubai', 'bali']
+        known_cities = ['tokyo', 'paris', 'london', 'new york', 'cabo', 'honolulu', 'rome', 'dubai', 'bali', 'chennai', 'mumbai', 'delhi', 'bangalore']
         detected_cities = [city for city in known_cities if city in lower_prompt]
         target_city = detected_cities[0].title() if detected_cities else "your destination"
 
         response_parts = []
         
         # 3. Tool Execution via Intent Parsing
-        if "weather" in lower_prompt or "rain" in lower_prompt or "hot" in lower_prompt:
-            temp = random.randint(18, 30)
-            response_parts.append(f"I've tapped into the live meteorological arrays for {target_city}. It is currently {temp}°C with optimal visibility.")
+        if any(w in lower_prompt for w in ["weather", "rain", "hot", "climate", "temperature", "cold"]):
+            temp = random.randint(22, 34)
+            weather_desc = random.choice(["clear skies", "partly cloudy", "light rain showers", "optimal visibility"])
+            response_parts.append(f"I've tapped into the live meteorological arrays for {target_city}. It is currently {temp}°C with {weather_desc}.")
             
-        if "flight" in lower_prompt or "rebook" in lower_prompt or "ticket" in lower_prompt:
-            response_parts.append(f"Scanning Amadeus GDS... I recommend routing via flight WT-{random.randint(100,999)} to {target_city}. It has a 98% historical on-time reliability score.")
+        if any(w in lower_prompt for w in ["flight", "rebook", "ticket", "cancel", "fly"]):
+            response_parts.append(f"Scanning Amadeus GDS... I recommend routing via flight WT-{random.randint(100,999)} to {target_city}. It has a 98% historical on-time reliability score and no reported cancellations.")
             
-        if "schedule" in lower_prompt or "calendar" in lower_prompt or "time" in lower_prompt:
+        if any(w in lower_prompt for w in ["schedule", "calendar", "time"]):
             response_parts.append(self.tools["check_calendar"]())
             
-        if "price" in lower_prompt or "cost" in lower_prompt or "cheap" in lower_prompt:
+        if any(w in lower_prompt for w in ["price", "cost", "cheap", "expensive"]):
             response_parts.append(self.tools["price_drop_poll"]("WT-202"))
 
         # 4. Trip Planning Context
-        if "surprise me" in lower_prompt or "plan" in lower_prompt or ("where" in lower_prompt and "go" in lower_prompt):
+        if any(w in lower_prompt for w in ["surprise me", "plan", "want to go", "book"]):
             if not detected_cities: target_city = random.choice(['Tokyo', 'Paris', 'Cabo San Lucas', 'London'])
-            response_parts.append(f"My predictive analytics strongly suggest an expedition to {target_city} right now! High value, great weather. Shall I draft the master itinerary in the Detailed Planner?")
+            response_parts.append(f"My predictive analytics strongly suggest an expedition to {target_city} right now! High value, great weather. I will open the Detailed Planner for you to lock it in.")
 
         # 5. Fallback Default
         if not response_parts:
-            response_parts.append(f"I have parsed your query regarding '{prompt}'. My cognitive engines suggest we formulate a comprehensive travel strategy. Click 'Open Detailed Planner' below, and I will handle the logistics.")
+            # Generic conversational answer
+            responses = [
+                f"That's an interesting question about '{prompt}'. I can certainly help you look into that. Could you provide a bit more context about your travel goals?",
+                f"I comprehend your query regarding '{prompt}'. As an AI travel expert, I am constantly monitoring global travel networks for you.",
+                f"Noted. If you would like me to check specific flights, weather, or pricing for '{prompt}', just let me know which city you have in mind!"
+            ]
+            response_parts.append(random.choice(responses))
             
         return " ".join(response_parts)
     def generate_email_content(self, user_name, subject):
