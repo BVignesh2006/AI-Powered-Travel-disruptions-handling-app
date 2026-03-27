@@ -134,6 +134,12 @@
             <img src="{{url_for('static', filename='img/home.jpg')}}" alt="Home section background picture">
         </div>
     </section>
+
+    <!-- FLOATING CHAT TRIGGER -->
+    <div onclick="toggleChat()" style="position: fixed; bottom: 4rem; right: 4rem; width: 7rem; height: 7rem; background: #38bdf8; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10006; box-shadow: 0 1rem 3rem rgba(56, 189, 248, 0.4); animation: pulse 2s infinite;">
+        <i class="fas fa-comment-dots" style="font-size: 3rem; color: #000;"></i>
+    </div>
+    <style>@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(56, 189, 248, 0); } 100% { box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); } }</style>
     <!-- booking section starts  -->
 
     </section>
@@ -173,8 +179,8 @@
         </div>
     </div>
 
-    <!-- TRAVEL EXPERT DATA HUB SECTION -->
-    <section id="travel-expert-monitor" style="padding: 10rem 7%;">
+    <!-- MOVED TRAVEL EXPERT HUB TO TOP -->
+    <section id="travel-expert-monitor" style="padding: 10rem 7%; background: #020617;">
         <h1 class="heading">
             <span>t</span>
             <span>r</span>
@@ -672,6 +678,11 @@
             if(document.getElementById('ai-assistant-dashboard')) {
                 updateAssistantContext();
             }
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(toggleChat, 1500); // Open Chat Auto-pilot after 1.5s
         });
     </script>
 </body>
