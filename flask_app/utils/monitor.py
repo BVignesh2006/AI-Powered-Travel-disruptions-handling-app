@@ -37,7 +37,13 @@ def scan_itineraries_proactively():
             if itinerary.get('flight_no') and '-' not in itinerary['flight_no']:
                 code, num = itinerary['flight_no'][:2], itinerary['flight_no'][2:]
                 
-                print(f"[SENTRY] Tracking live status for: {code}{num}...")
+                # HEARTBEAT PRINTING (Every few scans to keep terminal clean)
+                if not hasattr(scan_itineraries_proactively, 'heartbeat'): scan_itineraries_proactively.heartbeat = 0
+                scan_itineraries_proactively.heartbeat += 1
+                
+                if scan_itineraries_proactively.heartbeat % 10 == 0:
+                    print(f"[SENTRY HEARTBEAT] Monitoring: {code}{num} (Status: {itinerary.get('status')})")
+                
                 real_status = api_hub.track_flight_status(code, num, "2026-03-26")
                 
                 # JURY REQUIREMENT: PROACTIVE EVENT-DRIVEN TRIGGER
